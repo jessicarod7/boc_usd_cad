@@ -3,7 +3,9 @@ use std::cmp::Ordering;
 use clap::Parser;
 use jiff::ToSpan;
 use jiff::civil::Date;
+use num_traits::Inv;
 use reqwest::blocking::Client;
+use rust_decimal::Decimal;
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -21,6 +23,10 @@ struct Cli {
     /// End date of the range (format: YYYY-MM-DD)
     #[arg(value_name = "DATE")]
     end_date: Option<Date>,
+
+    /// Provide the exchange rate from CAD to USD
+    #[clap(short, long)]
+    reverse: bool,
 }
 
 fn main() {
@@ -47,10 +53,16 @@ fn main() {
 
     let resp = request.send().expect("failure while accessing BoC Valet");
     if resp.status().is_success() {
-        let observations = resp
+        let mut observations = resp
             .json::<ObservationsResponse>()
             .expect("failed to parse exchange data")
             .observations;
+
+        if args.reverse {
+            for obs in observations.iter_mut() {
+                obs.fxusdcad.v = obs.fxusdcad.v.inv().round_dp(4);
+            }
+        }
 
         print_results(args.start_date, args.end_date.is_some(), observations);
     } else {
@@ -103,7 +115,7 @@ struct Observation {
 #[derive(Deserialize)]
 struct FxUsdCad {
     /// Value of USD 1 in CAD
-    v: String,
+    v: Decimal,
 }
 
 impl PartialEq<Self> for Observation {
