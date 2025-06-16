@@ -3,7 +3,6 @@ use std::cmp::Ordering;
 use clap::Parser;
 use jiff::ToSpan;
 use jiff::civil::Date;
-use num_traits::Inv;
 use reqwest::blocking::Client;
 use rust_decimal::Decimal;
 use serde::Deserialize;
@@ -32,8 +31,13 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
 
+    let request_url = match args.reverse {
+        false => format!("{BOC_BASE_URL}/observations/FXUSDCAD/json"),
+        true => format!("{BOC_BASE_URL}/observations/FXCADUSD/json"),
+    };
+    
     let request = Client::new()
-        .get(format!("{BOC_BASE_URL}/observations/FXUSDCAD/json"))
+        .get(request_url)
         // Retrieve previous 10 days to account for weekends and holidays
         .query(&[("start_date", args.start_date - 10.days())]);
 
@@ -53,16 +57,10 @@ fn main() {
 
     let resp = request.send().expect("failure while accessing BoC Valet");
     if resp.status().is_success() {
-        let mut observations = resp
+        let observations = resp
             .json::<ObservationsResponse>()
             .expect("failed to parse exchange data")
             .observations;
-
-        if args.reverse {
-            for obs in observations.iter_mut() {
-                obs.fxusdcad.v = obs.fxusdcad.v.inv().round_dp(4);
-            }
-        }
 
         print_results(args.start_date, args.end_date.is_some(), observations);
     } else {
@@ -92,11 +90,11 @@ fn print_results(start_date: Date, is_range: bool, mut observations: Vec<Observa
 
     if is_range {
         for obs in observations.into_iter().skip(range_start) {
-            println!("{}: {}", obs.d, obs.fxusdcad.v)
+            println!("{}: {}", obs.d, obs.fx.v)
         }
     } else {
         let obs = observations.into_iter().nth(range_start).unwrap();
-        println!("{}: {}", obs.d, obs.fxusdcad.v)
+        println!("{}: {}", obs.d, obs.fx.v)
     }
 }
 
@@ -108,13 +106,13 @@ struct ObservationsResponse {
 #[derive(Deserialize)]
 struct Observation {
     d: Date,
-    #[serde(rename = "FXUSDCAD")]
-    fxusdcad: FxUsdCad,
+    #[serde(rename = "FXUSDCAD", alias = "FXCADUSD")]
+    fx: Fx,
 }
 
 #[derive(Deserialize)]
-struct FxUsdCad {
-    /// Value of USD 1 in CAD
+struct Fx {
+    /// Value of 1 unit of left currency in right currency
     v: Decimal,
 }
 

@@ -1,15 +1,14 @@
 [package]
 name = "boc_usd_cad"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Jessica Rodriguez <dev@jessicarod.com>"]
 edition = "2024"
 repository = "https://github.com/jessicarod7/boc_usd_cad"
-description = "USD to CAD exchange rates from the Bank of Canada (for ACB calculations)"
+description = "USD/CAD exchange rates from the Bank of Canada (for ACB calculations)"
 
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
 jiff = { version = "0.2.15", features = ["serde"] }
-num-traits = "0.2.19"
 reqwest = { version = "0.12.20", features = ["blocking", "json"] }
 rust_decimal = { version = "1.37.2", features = ["serde-str"] }
 serde = { version = "1.0.219", features = ["derive"] }
