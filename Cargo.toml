@@ -1,0 +1,13 @@
+[package]
+name = "boc_usd_cad"
+version = "0.1.0"
+authors = ["Jessica Rodriguez <dev@jessicarod.com>"]
+edition = "2024"
+description = "USD to CAD exchange rates from the Bank of Canada (for ACB calculations)"
+
+[dependencies]
+clap = { version = "4.5.40", features = ["derive"] }
+jiff = { version = "0.2.15", features = ["serde"] }
+reqwest = { version = "0.12.20", features = ["blocking", "json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
