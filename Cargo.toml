@@ -3,6 +3,7 @@ name = "boc_usd_cad"
 version = "0.1.0"
 authors = ["Jessica Rodriguez <dev@jessicarod.com>"]
 edition = "2024"
+repository = "https://github.com/jessicarod7/boc_usd_cad"
 description = "USD to CAD exchange rates from the Bank of Canada (for ACB calculations)"
 
 [dependencies]
